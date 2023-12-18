@@ -4,8 +4,6 @@ const dbName = process.env.DB_NAME;
 const dbPass = encodeURIComponent(process.env.DB_PASSWORD);
 const dbUserName = process.env.DB_USERNAME;
 
-console.log(dbName, dbPass, dbUserName);
-
 export const connectDB = async () => {
   try {
     await mongoose.connect(
