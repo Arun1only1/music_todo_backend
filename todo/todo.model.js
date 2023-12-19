@@ -18,6 +18,11 @@ const todoSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
+  },
 });
 
 // create table
