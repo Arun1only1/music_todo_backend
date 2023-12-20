@@ -91,7 +91,10 @@ export const loginUser = async (req, res) => {
   // generate token using encryption algorithm
   const token = jwt.sign(
     { email: user.email },
-    process.env.ACCESS_TOKEN_SECRET
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
+    }
   );
 
   return res.status(200).send({ user, accessToken: token });
