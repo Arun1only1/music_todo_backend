@@ -2,24 +2,18 @@ import express from "express";
 import { validateAccessToken } from "../middlewares/authentication.middleware.js";
 import { checkMongoIdValidity } from "../utils/mongo.id.validity.js";
 import { Todo } from "./todo.model.js";
-import { todoValidationSchema } from "./todo.validation.js";
+import {
+  getTodoListValidationSchema,
+  todoValidationSchema,
+} from "./todo.validation.js";
+import { validateReqBody } from "../middlewares/validation.middleware.js";
 
 const router = express.Router();
 
 router.post(
   "/todo/add",
+  validateReqBody(todoValidationSchema),
   validateAccessToken,
-  async (req, res, next) => {
-    const newTodo = req.body;
-
-    try {
-      await todoValidationSchema.validate(newTodo);
-    } catch (error) {
-      return res.status(400).send({ message: error.message });
-    }
-
-    next();
-  },
   async (req, res) => {
     const newTodo = req.body;
     const user = req.userDetails;
@@ -104,5 +98,39 @@ router.get("/todo/details/:id", validateAccessToken, async (req, res) => {
 
   return res.status(200).send(todo);
 });
+
+router.post(
+  "/todo/list",
+  validateReqBody(getTodoListValidationSchema),
+  validateAccessToken,
+  async (req, res) => {
+    // extract page,limit data from req.body
+    const { page, limit } = req.body;
+
+    // skip ,limit
+    const skip = (page - 1) * limit;
+
+    let userId = req.userDetails._id;
+
+    const todos = await Todo.aggregate([
+      {
+        $match: { userId: userId },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
+      {
+        $project: {
+          userId: 0,
+        },
+      },
+    ]);
+
+    return res.status(200).send(todos);
+  }
+);
 
 export default router;
